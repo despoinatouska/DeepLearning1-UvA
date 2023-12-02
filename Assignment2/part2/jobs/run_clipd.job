@@ -1,0 +1,60 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:1
+#SBATCH --job-name=CLIPIJD-CIFAR10
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=3
+#SBATCH --time=02:00:00
+#SBATCH --mem=32000M
+#SBATCH --output=slurm_output_dp_inject_%A.out
+
+module purge
+module load 2022
+module load Anaconda3/2022.05
+
+# activate the environment
+source activate dl2023
+
+# Run 1: Visual prompting CLIP on CIFAR-10 with standard text prompt
+code_dir=./
+
+# Standard constants
+arch="ViT-B/32"
+text_prompt_template="This is a photo of a {}"
+epochs=20
+prompt_type="deep_prompt"
+
+## Set of experiments on CIFAR-10
+#dataset="cifar10" # cifar100) fixed_patch
+root=/scratch-local/$USER
+mkdir -p $root
+
+datasets=(cifar10 cifar100)
+
+for dataset in "${datasets[@]}"; do
+      echo "Running experiment on $dataset with deep prompt and inject laey 5"
+      python $code_dir/main.py \
+          --dataset $dataset \
+          --arch $arch \
+          --text_prompt_template "$text_prompt_template" \
+          --epochs $epochs \
+          --prompt_type $prompt_type \
+          --root $root \
+          --injection_layer 5
+done
+
+
+for dataset in "${datasets[@]}"; do
+      echo "Running experiment on $dataset with deep prompt and inject laey 10"
+      python $code_dir/main.py \
+          --dataset $dataset \
+          --arch $arch \
+          --text_prompt_template "$text_prompt_template" \
+          --epochs $epochs \
+          --prompt_type $prompt_type \
+          --root $root \
+          --injection_layer 10
+done
+
+#python main.py --dataset "cifar100" --arch "ViT-B/32" --text_prompt_template "This is a photo of a {}" --epochs 20 --prompt_type "deep_prompt"

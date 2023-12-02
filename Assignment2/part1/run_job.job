@@ -1,0 +1,30 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu
+#SBATCH --gpus=1
+#SBATCH --job-name=Experiments
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=18
+#SBATCH --time=02:00:00
+#SBATCH --output=slurm_output_gn_aug_%A.out
+
+module purge
+module load 2022
+module load Anaconda3/2022.05
+
+# Activate your environment
+source activate dl2023
+srun python -u train.py --dataset cifar10
+srun python -u train.py --dataset cifar10 --augmentation_name "HorizontalFlip" --checkpoint_dir "saved_models_hor_flip"
+srun python -u train.py --dataset cifar10 --augmentation_name "RandomResizedCrop" --checkpoint_dir "saved_models_crop"
+srun python -u train.py --dataset cifar10 --augmentation_name "Combo_HorizontalFlip_RandomResizedCrop" --checkpoint_dir "saved_models_combo"
+srun python -u train.py --dataset cifar10 --test_noise --checkpoint_dir "saved_models_test_noise"
+srun python -u train.py --dataset cifar10 --augmentation_name "Gaussian_Noise" --checkpoint_dir "saved_models_gaussian_noise"
+
+#source activate dl2023
+srun python -u train.py --dataset cifar100 --checkpoint_dir "saved_models_100"
+srun python -u train.py --dataset cifar100 --augmentation_name "HorizontalFlip" --checkpoint_dir "saved_models_hor_flip_100"
+srun python -u train.py --dataset cifar100 --augmentation_name "RandomResizedCrop" --checkpoint_dir "saved_models_crop_100"
+srun python -u train.py --dataset cifar100 --augmentation_name "Combo_HorizontalFlip_RandomResizedCrop" --checkpoint_dir "saved_models_combo_100"
+srun python -u train.py --dataset cifar100 --test_noise --checkpoint_dir "saved_models_test_noise_100"
+srun python -u train.py --dataset cifar100 --augmentation_name "Gaussian_Noise" --checkpoint_dir "saved_models_gaussian_noise_100"
